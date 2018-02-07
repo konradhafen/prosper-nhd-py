@@ -3,10 +3,12 @@ import percentile
 #inPath = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt.tif"
 inPath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_wymean.tif"
 yearPath = "E:/konrad/Projects/usgs/prosper-nhd/data/quads/ras/year.tif"
-percentilepath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_percentile.tif"
-scorepath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_checkyear.tif"
+percentilepath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_percentile_2.tif"
+scorepath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_checkyear_2.tif"
 
-percentile.run(inPath, yearPath, percentilepath, scorepath)
+index = percentile.createBandIndex(yearPath, 1896, 2016)
+mask = percentile.createMask(yearPath, 1896, 2016)
+percentile.percentileOfMultibandIndex(inPath, index, percentilepath, scorepath, mask)
 
 # multi = percentile.getRasterAsArray(pptPath)
 # index = percentile.createBandIndex(yearPath, 1896, 2016)

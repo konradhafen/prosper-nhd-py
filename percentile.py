@@ -15,13 +15,9 @@ def createBandIndex(rasterPath, minValue, maxValue):
 
     """
     band = getRasterBandAsArray(rasterPath)
-    print "year", band.shape
-    print band[250:255, 600:605]
     if band is not None:
         array = band - minValue
         array = np.where((array < 0) | (array > (maxValue-minValue)), 0, array)
-        print "index"
-        print array[250:255, 600:605]
         return array
     else:
         return None
@@ -127,25 +123,11 @@ def percentileMultiband(multi, index):
         2d arrays result (percentile of value based on all bands), and score (value of requested band)
 
     """
-    mean = np.mean(multi, axis=0)
-    print "mean", mean.shape
-    print mean[250:255, 600:605]
-    sd = np.std(multi, axis=0)
-    print "sd", sd.shape
-    print sd[250:255, 600:605]
-    score, idx = linearTake(multi, index)
-    print "index", index.shape
-    print index[250:255, 600:605]
-    print "idx", idx.shape
-    print idx[250:255, 600:605]
-    print "score", score.shape
-    print score[250:255, 600:605]
-    print "values", multi.shape
-    print multi[79, 250:255, 600:605]
-    result = stats.norm.cdf(score, loc=mean, scale=sd)*100
-    print "result", result.shape
-    print result[250:255, 600:605]
-    return result, mean, sd, score, index
+    mean = np.mean(multi, axis=0) #mean of all bands at each row,col
+    sd = np.std(multi, axis=0) #standard deviation of all bands at each row,col
+    score, idx = linearTake(multi, index) #value of index band at each row,col
+    result = stats.norm.cdf(score, loc=mean, scale=sd)*100 #percentile
+    return result, score
 
 def writeArrayAsGTiff(path, array, rows, cols, geot, srs, nodata=-9999, nan=-9999, type=gdal.GDT_Float32):
     """
@@ -176,16 +158,35 @@ def writeArrayAsGTiff(path, array, rows, cols, geot, srs, nodata=-9999, nan=-999
     ds = None
     return None
 
-def run(datapath, indexpath, percentilepath, scorepath):
-    multi = getRasterAsArray(datapath)
-    index = createBandIndex(indexpath, 1896, 2016)
-    mask = createMask(indexpath, 1896, 2016)
-    print mask.shape
-    result, mean, sd, score, index = percentileMultiband(multi, index)
+def percentileOfMultibandIndex(datapath, index, percentilepath, scorepath=None, mask = None):
+    """
+    For a multiband raster, calculates the percentile of a band value at each row,col
 
-    ds = gdal.Open(datapath)
-    writeArrayAsGTiff(percentilepath, maskArray(result, mask), rows=result.shape[0], cols=result.shape[1],
-                      geot=ds.GetGeoTransform(), srs=ds.GetProjection())
-    writeArrayAsGTiff(scorepath, maskArray(score, mask), rows=result.shape[0], cols=result.shape[1],
-                      geot=ds.GetGeoTransform(), srs=ds.GetProjection())
-    ds = None
+    Args:
+        datapath: input path to multiband raster
+        index: 2d array with each row,col containing an index to a band in data path
+        percentilepath: output path for 2d raster of percentile values
+        scorepath: ouput path for 2d raster of the scores of each band index (optional)
+        maskpath: boolean array to mask outputs (optional)
+
+    Returns:
+        None
+
+    """
+    multi = getRasterAsArray(datapath)
+    if index is not None and index.shape == multi.shape[1:]:
+        result, score = percentileMultiband(multi, index)
+        if mask is None or mask.shape != result.shape:
+            mask = np.ones((result.shape))
+
+        ds = gdal.Open(datapath)
+        writeArrayAsGTiff(percentilepath, maskArray(result, mask), rows=result.shape[0], cols=result.shape[1],
+                          geot=ds.GetGeoTransform(), srs=ds.GetProjection())
+        if scorepath is not None:
+            writeArrayAsGTiff(scorepath, maskArray(score, mask), rows=result.shape[0], cols=result.shape[1],
+                              geot=ds.GetGeoTransform(), srs=ds.GetProjection())
+        ds = None
+    else:
+        print "problem with input index array", index.shape, multi.shape[1:]
+
+    return None
