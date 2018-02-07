@@ -1,15 +1,12 @@
 import percentile
 
-pptPath = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt.tif"
-scpdsiPath = ""
+#inPath = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt.tif"
+inPath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_wymean.tif"
 yearPath = "E:/konrad/Projects/usgs/prosper-nhd/data/quads/ras/year.tif"
-outPath = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt_percentile.tif"
-outPath1 = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt_percentile_mean.tif"
-outPath2 = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt_percentile_sd.tif"
-outPath3 = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt_percentile_score.tif"
-outPath4 = "E:/konrad/Projects/usgs/prosper-nhd/data/ppt/wateryear/ppt_percentile_index.tif"
+percentilepath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_percentile.tif"
+scorepath = "E:/konrad/Projects/usgs/prosper-nhd/data/scpdsi/wateryear/scpdsi_checkyear.tif"
 
-percentile.run(pptPath, yearPath, outPath, outPath1, outPath2, outPath3, outPath4)
+percentile.run(inPath, yearPath, percentilepath, scorepath)
 
 # multi = percentile.getRasterAsArray(pptPath)
 # index = percentile.createBandIndex(yearPath, 1896, 2016)
