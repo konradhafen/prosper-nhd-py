@@ -1,8 +1,17 @@
-import os
+from osgeo import gdal, ogr, osr
 import numpy as np
-from osgeo import gdal
 from scipy import stats
-import gisops
+import rasterstats
+import os
+
+def clipRasterWithPolygon(rasterpath, polygonpath, outputpath, gdalwarp="gdalwarp", nodata=-9999, xres=None, yres=None):
+    if xres is None or yres is None:
+        geot = getGeoTransform(rasterpath)
+        xres = abs(geot[1])
+        yres = abs(geot[5])
+
+    os.system(gdalwarp + " -dstnodata -9999 -q -cutline " + polygonpath + " -crop_to_cutline" + " -of GTiff -tr " + str(
+        xres) + " " + str(yres) + " " + rasterpath + " " + outputpath)
 
 def createBandIndex(rasterPath, minValue, maxValue):
     """
@@ -23,6 +32,14 @@ def createBandIndex(rasterPath, minValue, maxValue):
     else:
         return None
 
+def createJoinFields(lyr, fieldnames, fieldtype = ogr.OFTReal):
+    for name in fieldnames:
+        field = ogr.FieldDefn(name, fieldtype)
+        index = lyr.FindFieldIndex(name, 1)
+        if index is not -1: lyr.DeleteField(index)
+        lyr.CreateField(field)
+    return lyr
+
 def createMask(rasterPath, minValue, maxValue, band=1):
     """
     Create a mask from a raster band
@@ -39,6 +56,15 @@ def createMask(rasterPath, minValue, maxValue, band=1):
     """
     array = getRasterBandAsArray(rasterPath, band)
     return np.where((array < minValue) | (array > maxValue), 0, 1)
+
+def getGeoTransform(rasterPath):
+    ds = gdal.Open(rasterPath)
+    if ds is not None:
+        geot = ds.GetGeoTransform()
+        ds = None
+        return geot
+    else:
+        return None
 
 def getRasterAsArray(rasterPath):
     """
@@ -81,6 +107,18 @@ def getRasterBandAsArray(rasterPath, band = 1):
             return None
     else:
         return None
+
+def joinZonalStatsToSHP(inshp, zsresult, id, stats, fieldnames, stattype):
+    ds = ogr.Open(inshp, 1)
+    lyr = ds.GetLayer(0)
+    lyr = createJoinFields(lyr, fieldnames, stattype)
+    for result in zsresult:
+        feat = lyr.GetFeature(int(result[id]))
+        for i in range(len(stats)):
+            feat.SetField(fieldnames[i], result["properties"][stats[i]])
+        lyr.SetFeature(feat)
+    ds.Destroy()
+    return None
 
 def linearTake(values, indices):
     """
