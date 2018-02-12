@@ -57,7 +57,41 @@ def createMask(rasterPath, minValue, maxValue, band=1):
     array = getRasterBandAsArray(rasterPath, band)
     return np.where((array < minValue) | (array > maxValue), 0, 1)
 
+
+def getFieldValues(dataset, fieldName):
+    """
+    Get list of all values for shapefile field
+
+    Args:
+        dataset: path to shapefile
+        fieldName: name of field
+
+    Returns:
+        list of field values and FIDs if successful, None if not successful
+
+    """
+    values = []
+    fids = []
+    ds = ogr.Open(dataset)
+    lyr = ds.GetLayer()
+    if lyr is not None:
+        for feat in lyr:
+            values.append(feat.GetField(fieldName))
+            fids.append(feat.GetFID())
+        return values, fids
+    else:
+        return None
+
 def getGeoTransform(rasterPath):
+    """
+    Get the affine geotransformation informatino for a raster dataset
+
+    Args:
+        rasterPath: path to rater dataset
+
+    Returns: 6 element list if successful, None if not successful
+
+    """
     ds = gdal.Open(rasterPath)
     if ds is not None:
         geot = ds.GetGeoTransform()
@@ -107,6 +141,21 @@ def getRasterBandAsArray(rasterPath, band = 1):
             return None
     else:
         return None
+
+def getXYResolution(rasterPath):
+    """
+    Get X and Y pixel resolution from a rater dataset
+
+    Args:
+        rasterPath: path to raster dataset
+
+    Returns:
+        X resolution (positive), Y resolution (negative) on success or None on failure
+
+    """
+    geot = getGeoTransform(rasterPath)
+    if geot is not None: return geot[1], geot[5]
+    else: return None
 
 def joinZonalStatsToSHP(inshp, zsresult, id, stats, fieldnames, stattype):
     ds = ogr.Open(inshp, 1)
