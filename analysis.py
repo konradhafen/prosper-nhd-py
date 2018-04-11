@@ -3,19 +3,16 @@ from osgeo import gdal
 import numpy as np
 import geopandas
 
-basepath = "E:/konrad/Projects/usgs/prosper-nhd/data"
-
-bufferpath = basepath + "/nhd/MR/buf20_prob.shp"
-streamspath = "/outputs/shp/nhd_prosper_network.shp"
-catpath = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_MEAN.tif"
-probpath = basepath + "/prosper/RawSPPs/SPP_MEAN.tif"
-sdpath = basepath + "/prosper/RawSPPs/SPP_STD.tif"
-facpath = basepath + "/topo/fac/fac_albers83.tif"
-
 def testfunc():
     #get indices where PROSPER has values
-    prob = gis.getRasterBandAsArray(probpath, 1)
-    address = np.where(prob > 0)
+    #prob = gis.getRasterBandAsArray(probpath, 1)
+    prob = np.array([[0,0.4,0],
+                     [0,0.7,0],
+                     [0,0.05,0]])
+    print prob
+    row, col = np.where(prob > 0)
+    print row
+    print col
 
 def getSCPDSIforPROSPERYears(scpdsipath, nhdnetwork):
     nhdds = gis.openOGRDataSource(nhdnetwork, 1)
@@ -25,4 +22,19 @@ def getSCPDSIforPROSPERYears(scpdsipath, nhdnetwork):
         newfields.append("scp_"+str(i))
     gis.createFields(nhdlyr, newfields)
     return None
+
+basepath = "E:/konrad/Projects/usgs/prosper-nhd/data"
+
+bufferpath = basepath + "/nhd/MR/buf20_prob.shp"
+streamspath = "/outputs/shp/nhd_prosper_network.shp"
+catpath = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_MEAN.tif"
+probpath = basepath + "/prosper/RawSPPs/SPP_MEAN.tif"
+sdpath = basepath + "/prosper/RawSPPs/SPP_STD.tif"
+facpath = basepath + "/topo/fac/fac_albers83.tif"
+scpcheck = basepath + "/scpdsi/wateryear/scpdsi_checkyear.tif"
+scpall = basepath + "/scpdsi/wateryear/scpdsi_wymean_crb.tif"
+
+print "running"
+
+testfunc()
 
