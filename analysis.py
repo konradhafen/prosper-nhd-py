@@ -118,8 +118,8 @@ def getSCPDSIforPROSPERYears(scpdsipath, nhdnetwork):
 
 basepath = "E:/konrad/Projects/usgs/prosper-nhd/data"
 
-bufferpath = basepath + "/nhd/MR/buf20_prob.shp"
-streamspath = "/outputs/shp/nhd_stream_network_hr.shp"
+bufferpath = basepath + "/outputs/shp/nhd_hr_buf20.shp"
+streamspath = basepath + "/outputs/shp/nhd_stream_network_hr.shp"
 catpath = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_MEAN.tif"
 sdpath = basepath + "/prosper/RawSPPs/SPP_STD.tif"
 facpath = basepath + "/topo/fac/fac_albers83.tif"
@@ -134,5 +134,6 @@ outdir = basepath + "/scpdsi/difference"
 print "running"
 #testfunc()
 #scpdsiDifference(prospath, scpall, scpcheck, outpath)
-scpdsiDifferenceByYear(prospath, scpall, scpcheck, outdir)
+#scpdsiDifferenceByYear(prospath, scpall, scpcheck, outdir)
+addIDtoNHD(bufferpath)
 
