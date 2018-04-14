@@ -37,7 +37,7 @@ def addIDtoNHD(nhdpath):
 def deltaZonalStatsAverage(bufferpath, facpath, raspath, joinstats, fieldnames):
     zstats = gis.zonalStatisticsDelta(bufferpath, raspath, facpath, deltavalue=200.0, minvalue=125.0)
     print "zonal stats delta done"
-    gis.joinZonalStatsToSHP(buffer, zstats, "fid", joinstats, fieldnames)
+    gis.joinZonalStatsToSHP(bufferpath, zstats, "fid", joinstats, fieldnames)
     print "join done"
 
 def deltaZonalStatsByYear(bufferpath, facpath, rasbase, joinstats, fieldnames):
