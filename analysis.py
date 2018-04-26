@@ -181,9 +181,9 @@ print "running"
 #######################################
 #zonal stats on PROSPER categorical CIs
 #######################################
-deltaZonalStatsByYear(bufferpath_cat, facpath, rasbase_cat, joinstats_cat, fieldnames_cat)
+#deltaZonalStatsByYear(bufferpath_cat, facpath, rasbase_cat, joinstats_cat, fieldnames_cat)
 
 #zonal stats on scPDSI difference between PROSPER and NHD
-#deltaZonalStatsByYear(bufferpath_cat, facpath, rasbase_diff, joinstats_prob, fieldnames_diff)
+deltaZonalStatsByYear(bufferpath_dif, facpath, rasbase_diff, joinstats_prob, fieldnames_diff)
 
 
