@@ -2,7 +2,8 @@ import gispy as gis
 from osgeo import gdal
 import numpy as np
 import time
-import geopandas
+import geopandas as gpd
+import pandas
 
 def testfunc():
     #get indices where PROSPER has values
@@ -41,9 +42,10 @@ def deltaZonalStatsAverage(bufferpath, facpath, raspath, joinstats, fieldnames):
     print "join done"
 
 def deltaZonalStatsByYear(bufferpath, facpath, rasbase, joinstats, fieldnames):
-    for year in range(2004, 2005):
+    for year in range(2004, 2017):
         yearabv = str(year)[2:]
-        raspath = rasbase + str(year) + "_epsg5070.tif"
+        #raspath = rasbase + str(year) + "_epsg5070.tif"
+        raspath = rasbase + str(year) + ".tif"
         zstats = gis.zonalStatisticsDelta(bufferpath, raspath, facpath, deltavalue=200.0, minvalue=125.0)
         #print zstats
         writenames = []
@@ -139,11 +141,12 @@ def getSCPDSIforPROSPERYears(scpdsipath, nhdnetwork):
     return None
 
 basepath = "E:/konrad/Projects/usgs/prosper-nhd/data"
-
+csvpath = basepath + "/outputs/csv/nhd_hr_buf20.shp"
 bufferpath = basepath + "/outputs/shp/nhd_hr_buf20.shp"
-bufferpath_cat = basepath + "/outputs/shp/nhd_mr_buf20_cat.shp"
+bufferpath_cat = basepath + "/outputs/shp/nhd_hr_buf20_cat.shp"
 bufferpath_prob = basepath + "/outputs/shp/nhd_hr_buf20_prob.shp"
-streamspath = basepath + "/outputs/shp/nhd_stream_network_hr.shp"
+bufferpath_dif = basepath + "/outputs/shp/nhd_hr_buf20_dif.shp"
+streamspath = basepath + "/outputs/shp/nhd_stream_network_hr_subset.shp"
 catpath = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_MEAN.tif"
 sdpath = basepath + "/prosper/RawSPPs/SPP_STD.tif"
 facpath = basepath + "/topo/fac/fac_albers83.tif"
@@ -157,7 +160,7 @@ outdir = basepath + "/scpdsi/difference"
 
 joinstats_cat = ["majority", "mean", "max", "min"]
 joinstats_prob = ["sd", "mean", "max", "min", "median"]
-joinstats_prob = ["count", "sd", "mean", "max", "min", "median"]
+#joinstats_prob = ["count", "sd", "mean", "max", "min", "median"]
 rasbase_cat = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_"
 rasbase_prob = basepath + "/prosper/RawSPPs/SPP_"
 rasbase_diff = basepath + "/scpdsi/difference/diff_"
@@ -166,19 +169,21 @@ raspath_prob = basepath + "/prosper/RawSPPs/SPP_MEAN.tif"
 raspath_diff = basepath + "/scpdsi/difference/diff_MEAN_epsg5070.tif"
 fieldnames_prob = ["_sd", "_mean", "_max", "_min", "_med"]
 fieldnames_cat = ["_maj", "_mean", "_max", "_min"]
-fieldnames_diff = ["_countd", "_sdd", "_meand", "_maxd", "_mind", "_medd"]
+fieldnames_diff = ["_sdd", "_meand", "_maxd", "_mind", "_medd"]
 
 print "running"
 #testfunc()
 #scpdsiDifference(prospath, scpall, scpcheck, outpath)
 #scpdsiDifferenceByYear(prospath, scpall, scpcheck, outdir)
-#addIDtoNHD(bufferpath)
-deltaZonalStatsAverage(bufferpath_cat, facpath, raspath_diff, joinstats_prob, fieldnames_diff)
+#addIDtoNHD(streamspath)
+#deltaZonalStatsAverage(bufferpath_cat, facpath, raspath_diff, joinstats_prob, fieldnames_diff)
+
 #######################################
 #zonal stats on PROSPER categorical CIs
 #######################################
-#deltaZonalStatsByYear(bufferpath_cat, facpath, rasbase_cat, joinstats_cat, fieldnames_cat)
+deltaZonalStatsByYear(bufferpath_cat, facpath, rasbase_cat, joinstats_cat, fieldnames_cat)
 
 #zonal stats on scPDSI difference between PROSPER and NHD
 #deltaZonalStatsByYear(bufferpath_cat, facpath, rasbase_diff, joinstats_prob, fieldnames_diff)
+
 
