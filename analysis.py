@@ -139,6 +139,12 @@ def getSCPDSIforPROSPERYears(scpdsipath, nhdnetwork):
     gis.createFields(nhdlyr, newfields)
     return None
 
+def catSeedStats(catseedpath, statpath, shppath):
+    zstats = gis.zonalStatistics_rasterZones(catseedpath, statpath)
+    fieldnames = ["max", "min", "mean", "sd", "med", "maj", "count"]
+    writestats = ["max", "min", "mean", "sd", "median", "majority", "count"]
+    gis.joinZonalStatsToSHP(shppath, zstats, "GRIDCODE", writestats, fieldnames)
+
 basepath = "E:/konrad/Projects/usgs/prosper-nhd/data"
 csvpath = basepath + "/outputs/csv/nhd_hr_buf20.shp"
 bufferpath = basepath + "/outputs/shp/nhd_hr_buf20.shp"
@@ -177,12 +183,17 @@ print "running"
 #addIDtoNHD(streamspath)
 #deltaZonalStatsAverage(bufferpath_cat, facpath, raspath_diff, joinstats_prob, fieldnames_diff)
 
-#######################################
+########################################################################################################################
 #zonal stats on PROSPER categorical CIs
-#######################################
+########################################################################################################################
 #deltaZonalStatsByYear(bufferpath_cat, facpath, rasbase_cat, joinstats_cat, fieldnames_cat)
 
+########################################################################################################################
 #zonal stats on scPDSI difference between PROSPER and NHD
-deltaZonalStatsByYear(bufferpath_dif, facpath, rasbase_diff, joinstats_prob, fieldnames_diff, "_epsg5070.tif")
+########################################################################################################################
+# deltaZonalStatsByYear(bufferpath_dif, facpath, rasbase_diff, joinstats_prob, fieldnames_diff, "_epsg5070.tif")
 
+########################################################################################################################
+#zonal stats based on CatSeed grid
+########################################################################################################################
 
