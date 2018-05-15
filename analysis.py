@@ -140,10 +140,24 @@ def getSCPDSIforPROSPERYears(scpdsipath, nhdnetwork):
     return None
 
 def catSeedStats(catseedpath, statpath, shppath):
-    zstats = gis.zonalStatistics_rasterZones(catseedpath, statpath)
-    fieldnames = ["max", "min", "mean", "sd", "med", "maj", "count"]
-    writestats = ["max", "min", "mean", "sd", "median", "majority", "count"]
+    zstats = gis.zonalStatistics_rasterZones(catseedpath, statpath, "GRIDCODE")
+    fieldnames = ["max", "min", "mean", "sd", "med", "count"]
+    writestats = ["max", "min", "mean", "sd", "median", "count"]
     gis.joinZonalStatsToSHP(shppath, zstats, "GRIDCODE", writestats, fieldnames)
+
+def bufferStats(facpath, statpath, shppath):
+    writestats = ["max", "min", "mean", "sd", "median", "count"]
+    for bufdist in range(20, 101, 20):
+        print "running buffer", bufdist
+        bufferpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/buf" + str(bufdist) + ".shp"
+        fieldnames = ["max", "min", "mean", "sd", "med", "count"]
+        for i in range(0, len(writestats)):
+            fieldnames[i] = fieldnames[i] + str(bufdist)
+        zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, facpath, statpath, deltamin=-0.95,
+                                                     deltamax=0.9, minvalue=125.0)
+        print "zstats done"
+        gis.joinZonalStatsToSHP(shppath, zstats, 'fid', writestats, fieldnames)
+        print "join done"
 
 basepath = "E:/konrad/Projects/usgs/prosper-nhd/data"
 csvpath = basepath + "/outputs/csv/nhd_hr_buf20.shp"
@@ -196,4 +210,17 @@ print "running"
 ########################################################################################################################
 #zonal stats based on CatSeed grid
 ########################################################################################################################
+# catseedpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/catseed.tif"
+# shppath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/flowline-095-090.shp"
+# boisefac = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/fac.tif"
+# boisespp = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/spp.tif"
+# #gis.maskRasterWithValues(boisefac, 125, 10000000000)
+# catSeedStats(catseedpath, boisefac, shppath)
 
+########################################################################################################################
+#zonal stats based on different buffer distances
+########################################################################################################################
+shppath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/flowline-095-090.shp"
+boisefac = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/fac.tif"
+boisefaccopy = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/facCopy.tif"
+bufferStats(boisefac, boisefaccopy, shppath)
