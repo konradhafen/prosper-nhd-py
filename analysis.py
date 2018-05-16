@@ -154,6 +154,20 @@ def bufferStats(facpath, statpath, shppath):
         for i in range(0, len(writestats)):
             fieldnames[i] = fieldnames[i] + str(bufdist)
         zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, facpath, statpath, deltamin=-0.95,
+                                                     deltamax=0.99, minvalue=125.0, idfield='GRIDCODE')
+        print "zstats done"
+        gis.joinZonalStatsToSHP(shppath, zstats, 'GRIDCODE', writestats, fieldnames)
+        print "join done"
+
+def bufferStatsTest(facpath, statpath, shppath):
+    writestats = ["max", "min", "mean", "sd", "median", "count"]
+    for bufdist in range(40, 50, 20):
+        print "running buffer", bufdist
+        bufferpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/buf20.shp"
+        fieldnames = ["max", "min", "mean", "sd", "med", "count"]
+        for i in range(0, len(writestats)):
+            fieldnames[i] = fieldnames[i] + str(bufdist)
+        zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, facpath, statpath, deltamin=-0.95,
                                                      deltamax=0.9, minvalue=125.0)
         print "zstats done"
         gis.joinZonalStatsToSHP(shppath, zstats, 'fid', writestats, fieldnames)
@@ -220,7 +234,7 @@ print "running"
 ########################################################################################################################
 #zonal stats based on different buffer distances
 ########################################################################################################################
-shppath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/flowline-095-090.shp"
+shppath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/flowline-095-099.shp"
 boisefac = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/fac.tif"
 boisefaccopy = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/facCopy.tif"
 bufferStats(boisefac, boisefaccopy, shppath)
