@@ -180,7 +180,7 @@ bufferpath_cat = basepath + "/outputs/shp/nhd_hr_buf20_cat.shp"
 bufferpath_prob = basepath + "/outputs/shp/nhd_hr_buf20_prob.shp"
 bufferpath_dif = basepath + "/outputs/shp/nhd_hr_buf20_dif.shp"
 streamspath = basepath + "/outputs/shp/nhd_stream_network_hr_subset.shp"
-catpath = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_MEAN.tif"
+catpath = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_Mean.tif"
 sdpath = basepath + "/prosper/RawSPPs/SPP_STD.tif"
 facpath = basepath + "/topo/fac/fac_albers83.tif"
 
@@ -224,17 +224,37 @@ print "running"
 ########################################################################################################################
 #zonal stats based on CatSeed grid
 ########################################################################################################################
-catseedpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/catseed.tif"
-shppath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/flowline_nd-025-025.shp"
-boisefac = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/fac.tif"
-boisespp = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/spp.tif"
-#gis.maskRasterWithValues(boisefac, 125, 10000000000)
-catSeedStats(catseedpath, boisefac, shppath)
+# catseedpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/catseed.tif"
+# shppath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/flowline_nd-025-095.shp"
+# boisefac = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/fac.tif"
+# boisespp = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/spp.tif"
+# #gis.maskRasterWithValues(boisefac, 125, 10000000000)
+# catSeedStats(catseedpath, boisefac, shppath)
 
 ########################################################################################################################
-#zonal stats based on different buffer distances
+#delta zonal stats based on different buffer distances
 ########################################################################################################################
 #shppath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/flowline-099-099.shp"
-boisefac = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/fac.tif"
-boisefaccopy = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/facCopy.tif"
-bufferStats(boisefac, boisefaccopy, shppath, -0.25, 0.25)
+# boisefac = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/fac.tif"
+# boisefaccopy = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/sfboise/facCopy.tif"
+# bufferStats(boisefac, boisefaccopy, shppath, -0.25, 0.95)
+
+########################################################################################################################
+#zonal stats
+########################################################################################################################
+
+nhdpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/nhd_stream_network_mr_5070.shp"
+bufferpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/buf20.shp"
+writestats = ["count", "majority"]
+fieldnames = ["count", "maj"]
+
+zstats = gis.zonalStatistics(bufferpath, catpath, idxfield="COMID")
+print "zonal stats done"
+gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
+print "join 1 done"
+zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, facpath, catpath, deltamin=0.9,
+                                             deltamax=0.9, minvalue=125.0, idfield='COMID')
+print "delta zonal stats done"
+fieldnames = ["countd", "majd"]
+gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
+print "join done"
