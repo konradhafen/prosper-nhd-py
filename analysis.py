@@ -252,8 +252,8 @@ zstats = gis.zonalStatistics(bufferpath, catpath, idxfield="COMID")
 print "zonal stats done"
 gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
 print "join 1 done"
-zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, facpath, catpath, deltamin=0.9,
-                                             deltamax=0.9, minvalue=125.0, idfield='COMID')
+zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, catpath, facpath, deltamin=-0.90,
+                                             deltamax=0.90, minvalue=125.0, idfield='COMID')
 print "delta zonal stats done"
 fieldnames = ["countd", "majd"]
 gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
