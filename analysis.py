@@ -63,18 +63,18 @@ def zonalStatsByYear(bufferpath, nhdpath, outpath, rasbase, joinstats, fieldname
         writenames = []
         # for i in range(len(fieldnames)):
         #     writenames.append(yearabv + fieldnames[i])
-        newname = yearabv = "maj"
+        newname = yearabv + "_maj"
         pstats = pd.DataFrame.from_dict(zstats)
-        print "reading target shapefile"
-        print "target file read, starting join"
-        newshp = newshp.merge(pstats[["id", "majority"]], on=idxfield)
+        #print "reading target shapefile"
+        print "starting join"
+        newshp = newshp.merge(pstats[[idxfield, "majority"]], on=idxfield)
         newshp.columns.values[-1] = newname
         print "join done"
         print newshp.head()
         #gis.joinZonalStatsToSHP(nhdpath, zstats, "id", joinstats, writenames)
         print year, "done"
     print "saving all data"
-    #newshp.to_file(outpath, "ESRI Shapefile")
+    newshp.to_file(outpath, "ESRI Shapefile")
     print "save done"
 
 def scpdsiDifference(prospath, scppath, scpcheckpath, outpath):
@@ -302,9 +302,10 @@ rasbase_cat = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_"
 rasbase_prob = basepath + "/prosper/RawSPPs/SPP_"
 rasbase_diff = basepath + "/scpdsi/difference/diff_"
 
+idxfield = "id"
 print "categorical majority from mean raster"
-zstats = gis.zonalStatistics(bufferpath, raspath, idxfield="id")
-#print zstats
+zstats = gis.zonalStatistics(bufferpath, raspath, idxfield=idxfield)
+print "zstats", zstats
 joinstats = ["count", "majority"]
 writenames = ["id", "count", "majoirty"]
 print "running first join"
@@ -312,14 +313,14 @@ pstats = pd.DataFrame.from_dict(zstats)
 print "zstats converted to pandas dataframe"
 nhdshp = gpd.read_file(nhdpath)
 print "target shapefile read"
-test = nhdshp.merge(pstats[["id", "count", "majority"]], on="id")
+test = nhdshp.merge(pstats[[idxfield, "count", "majority"]], on=idxfield)
 print "renaming"
 test.columns.values[-1] = "maj"
 test.columns.values[-2] = "ct"
 print "join completed"
 print test.head()
 print "saving, stop now"
-#test.to_file(outpath, "ESRI Shapefile")
+test.to_file(outpath, "ESRI Shapefile")
 print "join saved"
 
 #gis.joinZonalStatsToSHP(nhdpath, zstats, "id", joinstats, writenames)
@@ -331,5 +332,5 @@ fieldnames_cat = ["_maj"]
 fieldnames_diff = ["_sdd", "_meand", "_maxd", "_mind", "_medd"]
 
 print "running zonal stats for each year"
-zonalStatsByYear(bufferpath, nhdpath, nhdpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield="id")
+zonalStatsByYear(bufferpath, nhdpath, outpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield=idxfield)
 print "PROSPER zonal stats completed"
