@@ -3,7 +3,7 @@ from osgeo import gdal
 import numpy as np
 import time
 import geopandas as gpd
-import pandas
+import pandas as pd
 
 def testfunc():
     #get indices where PROSPER has values
@@ -51,6 +51,24 @@ def deltaZonalStatsByYear(bufferpath, facpath, rasbase, joinstats, fieldnames, f
         for i in range(len(fieldnames)):
             writenames.append(yearabv + fieldnames[i])
         gis.joinZonalStatsToSHP(bufferpath, zstats, "fid", joinstats, writenames)
+        print year, "done"
+
+def zonalStatsByYear(bufferpath, nhdpath, rasbase, joinstats, fieldnames, idxfield, fileend = ".tif"):
+    for year in range(2004, 2017):
+        yearabv = str(year)[2:]
+        raspath = rasbase + str(year) + fileend
+        zstats = gis.zonalStatistics(bufferpath, raspath, idxfield=idxfield)
+        #print zstats
+        writenames = []
+        for i in range(len(fieldnames)):
+            writenames.append(yearabv + fieldnames[i])
+        pstats = pd.DataFrame.from_dict(zstats)
+        print "reading target shapefile"
+        nhdshp = gpd.read_file(nhdpath)
+        print "target file read, starting join"
+        nhdshp.merge(pstats, on=idxfield)
+        print "join done"
+        #gis.joinZonalStatsToSHP(nhdpath, zstats, "id", joinstats, writenames)
         print year, "done"
 
 def scpdsiDifference(prospath, scppath, scpcheckpath, outpath):
@@ -243,18 +261,61 @@ print "running"
 #zonal stats
 ########################################################################################################################
 
-nhdpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/nhd_stream_network_mr_5070.shp"
+nhdpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/nhd_stream_network_mr_5070_test.shp"
 bufferpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/buf20.shp"
 writestats = ["count", "majority"]
 fieldnames = ["count", "maj"]
 
 zstats = gis.zonalStatistics(bufferpath, catpath, idxfield="COMID")
 print "zonal stats done"
-gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
-print "join 1 done"
-zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, catpath, facpath, deltamin=-0.90,
-                                             deltamax=0.90, minvalue=125.0, idfield='COMID')
-print "delta zonal stats done"
-fieldnames = ["countd", "majd"]
-gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
-print "join done"
+pstats = pd.DataFrame.from_dict(zstats)
+print pstats
+nhdshp = gpd.read_file(nhdpath)
+print nhdshp.head()
+nhdshp.merge(pstats, on="COMID")
+print nhdshp.head()
+# gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
+# print "join 1 done"
+# zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, catpath, facpath, deltamin=-0.90,
+#                                              deltamax=0.90, minvalue=125.0, idfield='COMID')
+# print "delta zonal stats done"
+# fieldnames = ["countd", "majd"]
+# gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
+# print "join done"
+
+########################################################################################################################
+#run PROSPER zonal stats for hi res nhd
+########################################################################################################################
+
+nhdpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_catstat_5070.shp"
+bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
+raspath = raspath_cat
+
+rasbase_cat = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_"
+rasbase_prob = basepath + "/prosper/RawSPPs/SPP_"
+rasbase_diff = basepath + "/scpdsi/difference/diff_"
+
+print "categorical majority from mean raster"
+zstats = gis.zonalStatistics(bufferpath, raspath, idxfield="id")
+#print zstats
+joinstats = ["count", "majority"]
+writenames = ["count", "majoirty"]
+print "running first join"
+pstats = pd.DataFrame.from_dict(zstats)
+print "zstats converted to pandas dataframe"
+nhdshp = gpd.read_file(nhdpath)
+print "target shapefile read"
+nhdshp.merge(pstats, on="id")
+print "join completed"
+
+#gis.joinZonalStatsToSHP(nhdpath, zstats, "id", joinstats, writenames)
+
+joinstats_cat = ["majority"]
+joinstats_prob = ["sd", "mean", "max", "min", "median"]
+fieldnames_prob = ["_sd", "_mean", "_max", "_min", "_med"]
+fieldnames_cat = ["_maj"]
+fieldnames_diff = ["_sdd", "_meand", "_maxd", "_mind", "_medd"]
+
+print "running zonal stats for each year"
+zonalStatsByYear(bufferpath, nhdpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield="id")
+print "PROSPER zonal stats completed"
