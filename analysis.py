@@ -53,23 +53,29 @@ def deltaZonalStatsByYear(bufferpath, facpath, rasbase, joinstats, fieldnames, f
         gis.joinZonalStatsToSHP(bufferpath, zstats, "fid", joinstats, writenames)
         print year, "done"
 
-def zonalStatsByYear(bufferpath, nhdpath, rasbase, joinstats, fieldnames, idxfield, fileend = ".tif"):
+def zonalStatsByYear(bufferpath, nhdpath, outpath, rasbase, joinstats, fieldnames, idxfield, fileend = ".tif"):
+    newshp = gpd.read_file(outpath)
     for year in range(2004, 2017):
         yearabv = str(year)[2:]
         raspath = rasbase + str(year) + fileend
         zstats = gis.zonalStatistics(bufferpath, raspath, idxfield=idxfield)
         #print zstats
         writenames = []
-        for i in range(len(fieldnames)):
-            writenames.append(yearabv + fieldnames[i])
+        # for i in range(len(fieldnames)):
+        #     writenames.append(yearabv + fieldnames[i])
+        newname = yearabv = "maj"
         pstats = pd.DataFrame.from_dict(zstats)
         print "reading target shapefile"
-        nhdshp = gpd.read_file(nhdpath)
         print "target file read, starting join"
-        nhdshp.merge(pstats, on=idxfield)
+        newshp = newshp.merge(pstats[["id", "majority"]], on=idxfield)
+        newshp.columns.values[-1] = newname
         print "join done"
+        print newshp.head()
         #gis.joinZonalStatsToSHP(nhdpath, zstats, "id", joinstats, writenames)
         print year, "done"
+    print "saving all data"
+    #newshp.to_file(outpath, "ESRI Shapefile")
+    print "save done"
 
 def scpdsiDifference(prospath, scppath, scpcheckpath, outpath):
     start = time.time()
@@ -261,19 +267,19 @@ print "running"
 #zonal stats
 ########################################################################################################################
 
-nhdpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/nhd_stream_network_mr_5070_test.shp"
-bufferpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/buf20.shp"
-writestats = ["count", "majority"]
-fieldnames = ["count", "maj"]
-
-zstats = gis.zonalStatistics(bufferpath, catpath, idxfield="COMID")
-print "zonal stats done"
-pstats = pd.DataFrame.from_dict(zstats)
-print pstats
-nhdshp = gpd.read_file(nhdpath)
-print nhdshp.head()
-nhdshp.merge(pstats, on="COMID")
-print nhdshp.head()
+# nhdpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/nhd_stream_network_mr_5070_test.shp"
+# bufferpath = "E:/konrad/Projects/usgs/prosper-nhd/data/method_dev/nhd/mr/buf20.shp"
+# writestats = ["count", "majority"]
+# fieldnames = ["count", "maj"]
+#
+# zstats = gis.zonalStatistics(bufferpath, catpath, idxfield="COMID")
+# print "zonal stats done"
+# pstats = pd.DataFrame.from_dict(zstats)
+# print pstats
+# nhdshp = gpd.read_file(nhdpath)
+# print nhdshp.head()
+# nhdshp.merge(pstats, on="COMID")
+# print nhdshp.head()
 # gis.joinZonalStatsToSHP(nhdpath, zstats, 'COMID', writestats, fieldnames)
 # print "join 1 done"
 # zstats = gis.zonalStatisticsDelta_methodtest(bufferpath, catpath, facpath, deltamin=-0.90,
@@ -288,6 +294,7 @@ print nhdshp.head()
 ########################################################################################################################
 
 nhdpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_catstat_5070.shp"
+outpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_catstat_5070_out.shp"
 bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
 raspath = raspath_cat
 
@@ -299,23 +306,30 @@ print "categorical majority from mean raster"
 zstats = gis.zonalStatistics(bufferpath, raspath, idxfield="id")
 #print zstats
 joinstats = ["count", "majority"]
-writenames = ["count", "majoirty"]
+writenames = ["id", "count", "majoirty"]
 print "running first join"
 pstats = pd.DataFrame.from_dict(zstats)
 print "zstats converted to pandas dataframe"
 nhdshp = gpd.read_file(nhdpath)
 print "target shapefile read"
-nhdshp.merge(pstats, on="id")
+test = nhdshp.merge(pstats[["id", "count", "majority"]], on="id")
+print "renaming"
+test.columns.values[-1] = "maj"
+test.columns.values[-2] = "ct"
 print "join completed"
+print test.head()
+print "saving, stop now"
+#test.to_file(outpath, "ESRI Shapefile")
+print "join saved"
 
 #gis.joinZonalStatsToSHP(nhdpath, zstats, "id", joinstats, writenames)
 
-joinstats_cat = ["majority"]
+joinstats_cat = ["id", "majority"]
 joinstats_prob = ["sd", "mean", "max", "min", "median"]
 fieldnames_prob = ["_sd", "_mean", "_max", "_min", "_med"]
 fieldnames_cat = ["_maj"]
 fieldnames_diff = ["_sdd", "_meand", "_maxd", "_mind", "_medd"]
 
 print "running zonal stats for each year"
-zonalStatsByYear(bufferpath, nhdpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield="id")
+zonalStatsByYear(bufferpath, nhdpath, nhdpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield="id")
 print "PROSPER zonal stats completed"
