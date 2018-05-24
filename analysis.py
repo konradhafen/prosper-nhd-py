@@ -53,7 +53,7 @@ def deltaZonalStatsByYear(bufferpath, facpath, rasbase, joinstats, fieldnames, f
         gis.joinZonalStatsToSHP(bufferpath, zstats, "fid", joinstats, writenames)
         print year, "done"
 
-def zonalStatsByYear(bufferpath, nhdpath, outpath, rasbase, joinstats, fieldnames, idxfield, fileend = ".tif"):
+def zonalStatsByYear(bufferpath, rasbase, joinstats, fieldnames, idxfield, fileend = ".tif"):
     # newshp = gpd.read_file(outpath)
     for year in range(2004, 2017):
         yearabv = str(year)[2:]
@@ -63,15 +63,8 @@ def zonalStatsByYear(bufferpath, nhdpath, outpath, rasbase, joinstats, fieldname
         writenames = []
         for i in range(len(fieldnames)):
             writenames.append(yearabv + fieldnames[i])
-        # newname = yearabv + "_maj"
-        # pstats = pd.DataFrame.from_dict(zstats)
-        #print "reading target shapefile"
-        print "starting join"
-        # newshp = newshp.merge(pstats[[idxfield, "majority"]], on=idxfield)
-        # newshp.columns.values[-1] = newname
-        # print "join done"
-        # print newshp.head()
-        gis.joinZonalStatsToSHP(nhdpath, zstats, idxfield, joinstats, writenames)
+            print year, writenames, joinstats
+        gis.joinZonalStatsToSHP(bufferpath, zstats, idxfield, joinstats, writenames)
         print year, "done"
     # print "saving all data"
     # newshp.to_file(outpath, "ESRI Shapefile")
@@ -332,5 +325,5 @@ fieldnames_cat = ["_maj"]
 fieldnames_diff = ["_sdd", "_meand", "_maxd", "_mind", "_medd"]
 
 print "running zonal stats for each year"
-zonalStatsByYear(bufferpath, nhdpath, outpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield=idxfield)
+zonalStatsByYear(bufferpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield=idxfield)
 print "PROSPER zonal stats completed"
