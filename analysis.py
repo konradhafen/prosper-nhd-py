@@ -1,5 +1,5 @@
 import gispy as gis
-from osgeo import gdal
+from osgeo import gdal, ogr
 import numpy as np
 import time
 import geopandas as gpd
@@ -286,44 +286,61 @@ print "running"
 #run PROSPER zonal stats for hi res nhd
 ########################################################################################################################
 
-nhdpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_catstat_5070.shp"
-outpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_catstat_5070_out.shp"
+# nhdpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_catstat_5070.shp"
+# outpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_catstat_5070_out.shp"
+# bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
+# raspath = raspath_cat
+#
+# rasbase_cat = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_"
+# rasbase_prob = basepath + "/prosper/RawSPPs/SPP_"
+# rasbase_diff = basepath + "/scpdsi/difference/diff_"
+#
+# idxfield = "fid"
+# print "categorical majority from mean raster"
+# zstats = gis.zonalStatistics(bufferpath, raspath, idxfield=idxfield)
+# #print "zstats", zstats
+# joinstats = ["count", "majority"]
+# writenames = ["count", "majority"]
+# print "running first join"
+#
+# gis.joinZonalStatsToSHP(bufferpath, zstats, idxfield, joinstats, writenames)
+#
+# joinstats_cat = ["majority"]
+# joinstats_prob = ["sd", "mean", "max", "min", "median"]
+# fieldnames_prob = ["_sd", "_mean", "_max", "_min", "_med"]
+# fieldnames_cat = ["_maj"]
+# fieldnames_diff = ["_sdd", "_meand", "_maxd", "_mind", "_medd"]
+#
+# print "running zonal stats for each year"
+# zonalStatsByYear(bufferpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield=idxfield)
+# print "PROSPER zonal stats completed"
+
+########################################################################################################################
+#run PROSPER zonal stats for hi res nhd
+########################################################################################################################
+# print "running zonal stats for each year"
+# bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
+# rasbase_diff = basepath + "/scpdsi/difference/diff_"
+# idxfield = "fid"
+# joinstats_prob = ["sd", "mean"]
+# fieldnames_prob = ["_sd", "_mean"]
+# zonalStatsByYear(bufferpath, rasbase_diff, joinstats_prob, fieldnames_prob, idxfield=idxfield, fileend="_epsg5070.tif")
+# print "SCPDSI zonal stats completed"
+
+########################################################################################################################
+#delete features with no geometry
+########################################################################################################################
 bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
-raspath = raspath_cat
 
-rasbase_cat = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_"
-rasbase_prob = basepath + "/prosper/RawSPPs/SPP_"
-rasbase_diff = basepath + "/scpdsi/difference/diff_"
-
-idxfield = "fid"
-print "categorical majority from mean raster"
-zstats = gis.zonalStatistics(bufferpath, raspath, idxfield=idxfield)
-#print "zstats", zstats
-joinstats = ["count", "majority"]
-writenames = ["count", "majority"]
-print "running first join"
-# pstats = pd.DataFrame.from_dict(zstats)
-# print "zstats converted to pandas dataframe"
-# nhdshp = gpd.read_file(nhdpath)
-# print "target shapefile read"
-# test = nhdshp.merge(pstats[[idxfield, "count", "majority"]], on=idxfield)
-# print "renaming"
-# test.columns.values[-1] = "maj"
-# test.columns.values[-2] = "ct"
-# print "join completed"
-# print test.head()
-# print "saving, stop now"
-# test.to_file(outpath, "ESRI Shapefile")
-# print "join saved"
-
-gis.joinZonalStatsToSHP(bufferpath, zstats, idxfield, joinstats, writenames)
-
-joinstats_cat = ["majority"]
-joinstats_prob = ["sd", "mean", "max", "min", "median"]
-fieldnames_prob = ["_sd", "_mean", "_max", "_min", "_med"]
-fieldnames_cat = ["_maj"]
-fieldnames_diff = ["_sdd", "_meand", "_maxd", "_mind", "_medd"]
-
-print "running zonal stats for each year"
-zonalStatsByYear(bufferpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield=idxfield)
-print "PROSPER zonal stats completed"
+ds = ogr.Open(bufferpath, 1)
+lyr = ds.GetLayer(0)
+iter = 0
+feat = lyr.GetNextFeature()
+while feat:
+    if feat.GetGeometryRef() is None:
+        lyr.DeleteFeature(feat.GetFID())
+    iter += 1
+    if iter % 100000 == 0:
+        print "iter", iter, "of", lyr.GetFeatureCount()
+    feat = lyr.GetNextFeature()
+ds.Destroy()
