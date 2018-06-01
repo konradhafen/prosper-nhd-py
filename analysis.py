@@ -286,39 +286,39 @@ print "running"
 #run PROSPER zonal stats for hi res nhd
 ########################################################################################################################
 
-bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
-raspath = raspath_cat
-
-rasbase_cat = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_"
-
-idxfield = "fid"
-print "categorical majority from mean raster"
-zstats = gis.zonalStatistics(bufferpath, raspath, idxfield=idxfield)
-#print "zstats", zstats
-joinstats = ["count", "majority"]
-writenames = ["count", "majority"]
-print "running first join"
-
-gis.joinZonalStatsToSHP(bufferpath, zstats, idxfield, joinstats, writenames)
-
-joinstats_cat = ["majority"]
-fieldnames_cat = ["_maj"]
-
-print "running zonal stats for each year"
-zonalStatsByYear(bufferpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield=idxfield)
-print "PROSPER zonal stats completed"
+# bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
+# raspath = raspath_cat
+#
+# rasbase_cat = basepath + "/prosper/CategoricalSPPs/CategoricalSPP_"
+#
+# idxfield = "fid"
+# print "categorical majority from mean raster"
+# zstats = gis.zonalStatistics(bufferpath, raspath, idxfield=idxfield)
+# #print "zstats", zstats
+# joinstats = ["count", "majority"]
+# writenames = ["count", "majority"]
+# print "running first join"
+#
+# gis.joinZonalStatsToSHP(bufferpath, zstats, idxfield, joinstats, writenames)
+#
+# joinstats_cat = ["majority"]
+# fieldnames_cat = ["_maj"]
+#
+# print "running zonal stats for each year"
+# zonalStatsByYear(bufferpath, rasbase_cat, joinstats_cat, fieldnames_cat, idxfield=idxfield)
+# print "PROSPER zonal stats completed"
 
 ########################################################################################################################
 #run PDSI difference zonal stats for hi res nhd
 ########################################################################################################################
-# print "running zonal stats for each year"
-# bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
-# rasbase_diff = basepath + "/scpdsi/difference/diff_"
-# idxfield = "fid"
-# joinstats_prob = ["sd", "mean"]
-# fieldnames_prob = ["_sd", "_mean"]
-# zonalStatsByYear(bufferpath, rasbase_diff, joinstats_prob, fieldnames_prob, idxfield=idxfield, fileend="_epsg5070.tif")
-# print "SCPDSI zonal stats completed"
+print "running zonal stats for each year"
+bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
+rasbase_diff = basepath + "/scpdsi/difference/diff_"
+idxfield = "fid"
+joinstats_prob = ["sd", "mean"]
+fieldnames_prob = ["_sd", "_mean"]
+zonalStatsByYear(bufferpath, rasbase_diff, joinstats_prob, fieldnames_prob, idxfield=idxfield, fileend="_epsg5070.tif")
+print "SCPDSI zonal stats completed"
 
 ########################################################################################################################
 #delete features with no geometry
