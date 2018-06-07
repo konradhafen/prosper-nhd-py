@@ -311,14 +311,31 @@ print "running"
 ########################################################################################################################
 #run PDSI difference zonal stats for hi res nhd
 ########################################################################################################################
+# print "running zonal stats for each year"
+# bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
+# rasbase_diff = basepath + "/scpdsi/difference/diff_"
+# idxfield = "fid"
+# joinstats_prob = ["sd", "mean"]
+# fieldnames_prob = ["_sd", "_mean"]
+# zonalStatsByYear(bufferpath, rasbase_diff, joinstats_prob, fieldnames_prob, idxfield=idxfield, fileend="_epsg5070.tif")
+# print "SCPDSI zonal stats completed"
+
+########################################################################################################################
+#run zonal stats for drainage area
+########################################################################################################################
+
 print "running zonal stats for each year"
 bufferpath = basepath + "/outputs/shp/NHD_CRB_HR_split_PerIntAP_buf20_5070.shp"
-rasbase_diff = basepath + "/scpdsi/difference/diff_"
+facpath = basepath + "/topo/fac/fac_albers83.tif"
 idxfield = "fid"
-joinstats_prob = ["sd", "mean"]
-fieldnames_prob = ["_sd", "_mean"]
-zonalStatsByYear(bufferpath, rasbase_diff, joinstats_prob, fieldnames_prob, idxfield=idxfield, fileend="_epsg5070.tif")
-print "SCPDSI zonal stats completed"
+joinstats = ["median", "mean"]
+fieldnames = ["fac_med", "fac_mean"]
+
+print "starting zonal stats"
+zstats = gis.zonalStatistics(bufferpath, facpath, idxfield=idxfield)
+print "joining zonal stats"
+gis.joinZonalStatsToSHP(bufferpath, zstats, idxfield, joinstats, fieldnames)
+print "done"
 
 ########################################################################################################################
 #delete features with no geometry
