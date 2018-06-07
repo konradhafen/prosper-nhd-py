@@ -70,6 +70,9 @@ def zonalStatsByYear(bufferpath, rasbase, joinstats, fieldnames, idxfield, filee
     # newshp.to_file(outpath, "ESRI Shapefile")
     # print "save done"
 
+def scpdsiDifferencePoints(points, scppath, scpcheckpath):
+    return 0
+
 def scpdsiDifference(prospath, scppath, scpcheckpath, outpath):
     start = time.time()
     prob = gis.getRasterBandAsArray(prospath)
